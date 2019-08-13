@@ -40,6 +40,7 @@ copy <eos-images> /home/arista
 
 ## Process
 
+```
 SWITCH | -- DHCP REQUEST            -> | ZTP DHCP Server
 SWITCH | <- DHCP OFFER              <- | ZTP DHCP Server
 SWITCH | -- HTTP GET startup-config -> | ZTP HTTP Server
@@ -51,3 +52,4 @@ SWTICH | -- HTTP GET reimage.sh     -> | ZTP HTTP Server
 SWITCH | -- VERIFY software version -- |
 SWITCH | -- ERASE config            -- |
 SWITCH | -- SHUTDOWN                -- |
+```
