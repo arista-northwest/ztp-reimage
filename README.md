@@ -37,3 +37,17 @@ systemctl restart dhcpd
 copy startup-config reimage.sh /usr/share/nginx/html/
 copy <eos-images> /home/arista
 ```
+
+## Process
+
+SWITCH | -- DHCP REQUEST            -> | ZTP DHCP Server
+SWITCH | <- DHCP OFFER              <- | ZTP DHCP Server
+SWITCH | -- HTTP GET startup-config -> | ZTP HTTP Server
+SWITCH | -- RELOAD #1               -- | 
+SWTICH | -- HTTP GET reimage.sh     -> | ZTP HTTP Server
+SWITCH | -- FTP GET <eosimage>      -- | ZTP FTP Server
+SWITCH | -- RELOAD #2               -- |
+SWTICH | -- HTTP GET reimage.sh     -> | ZTP HTTP Server
+SWITCH | -- VERIFY software version -- |
+SWITCH | -- ERASE config            -- |
+SWITCH | -- SHUTDOWN                -- |
