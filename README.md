@@ -2,9 +2,9 @@
 
 ## Setup
 
-Subnet: 192.168.59.0/24
-HTTP/FTP/DHCP Server: 192.168.59.5
-FTP Username/Password: arista/arista
+- Subnet: 192.168.59.0/24
+- HTTP/FTP/DHCP Server: 192.168.59.5
+- FTP Username/Password: arista/arista
 
 ## Installation
 
