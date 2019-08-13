@@ -1,0 +1,10 @@
+aaa root secret root
+aaa authentication policy local allow-nopassword-remote-login
+username admin privilege 15 role network-admin nopassword
+!
+event-handler RUN_SCRIPT
+  action bash curl -s http://192.168.59.5/reimage.sh | bash
+  trigger on-boot
+
+interface Management1
+  ip address dhcp
