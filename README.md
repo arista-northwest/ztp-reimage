@@ -30,12 +30,12 @@ systemctl enable nginx
 systemctl restart nginx
 systemctl restart vsftpd
 
-copy etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf
+cp etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf
 
 systemctl restart dhcpd
 
-copy startup-config reimage.sh /usr/share/nginx/html/
-copy <eos-images> /home/arista
+cp startup-config reimage.sh /usr/share/nginx/html/
+cp <eos-images> /home/arista
 ```
 
 ## Process
