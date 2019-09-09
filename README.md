@@ -34,7 +34,7 @@ cp etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf
 
 systemctl restart dhcpd
 
-cp startup-config reimage.sh /usr/share/nginx/html/
+cp startup-config reimage.py /usr/share/nginx/html/
 cp <eos-images> /home/arista
 ```
 
