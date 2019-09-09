@@ -48,11 +48,11 @@ def get_sysinfo():
     
     return {
         "model": ver["modelName"],
-        # "image": boot["softwareImage"],
+        "image": boot["softwareImage"],
         "version": ver["version"],
-        "serial": serial
-        # "_internal": ver["internalVersion"],
-        # "_revison": ver["hardwareRevision"]
+        "serial": serial,
+        "internal": ver["internalVersion"],
+        "revison": ver["hardwareRevision"]
     }
 
 def get_image(model):
@@ -86,7 +86,8 @@ def main():
             "curl", "-T", "-", "-u", FTP_USER,
             "ftp://%s/upload/%s" % (FTP_SERVER, sysinfo["serial"])
         ], stdin=PIPE, stdout=PIPE)
-        
+
+        proc.communicate(json.dumps(sysinfo, indent=4, separators=(",", ": ")) + "\n")
         cli(["write erase now", "delete flash:zerotouch-config"])
 
 if __name__ == "__main__":
