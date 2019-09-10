@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 from __future__ import print_function
+
 import collections
 import json
 import os
 import re
 import subprocess
+import sys
 import time
+
 from subprocess import Popen, PIPE, STDOUT
 
 from six import iteritems
@@ -17,10 +20,24 @@ os.environ.update({"TERM": "dumb"})
 
 IMAGES = collections.OrderedDict([
     # <SKU Regex>: (<Image Filename>, <Expected Version Displayed>)
+    # vEOS
     (r"vEOS", ("vEOS-lab-4.21.2.3F.swi", "4.21.2.3F")),
-    #r"DCS-7050QX-32S-F":  ("EOS-4.21.2.3F.swi", "4.21.2.3F"),
-    (r"DCS-7508", ("EOS-DPE-4.21.2.3F.swi", "4.21.2.3F-DPE")),
-    (r".*", ("EOS-DPE-4.21.2.3F.swi", "4.21.2.3F-DPE"))
+    
+    # 7050QX-32S    4.21.2.3F
+    (r"7050QX-32S",  ("EOS-4.21.2.3F.swi", "4.21.2.3F")),
+    
+    # 7060CX-32S    4.22.1FX-CLI    4.20.3F
+    # 7260CX3-64    4.22.1FX-CLI    4.20.3F
+    (r"7\d60CX", ("EOS-4.20.3F.swi", "4.20.3F")),
+    
+    # 7170-64C    4.22.1FX-CLI    4.21.6.1.1F
+    (r"7170-64C", ("EOS-4.21.6.1.1F.swi", "4.21.6.1.1F")),
+
+    # 7280QRA-C36M    4.22.1FX-CLI    4.21.2.3F
+    (r"7280QRA", ("EOS-4.21.2.3F.swi", "4.21.2.3F")),
+    
+    # 7504N, 7508N, 7512N or 7516N  4.22.1FX-CLI    4.21.2.3F
+    (r"75\d{2}.?", ("EOS-4.21.2.3F.swi", "4.21.2.3F"))
 ])
 
 def cli(cmds):
@@ -57,17 +74,19 @@ def get_sysinfo():
 
 def get_image(model):
     for (pattern, image) in iteritems(IMAGES):
-        if re.match(pattern, model):
+        if re.search(pattern, model):
             return image
-    
-    # return the last image if we get here
-    return IMAGES.values()[-1]
+
+    return (None, None) #IMAGES.values()[-1]
 
 def main():
     sysinfo = get_sysinfo()
     model = sysinfo["model"]
     running = sysinfo["version"]
     image, version = get_image(model)
+
+    # if not image:
+        
 
     if running != version:
         dest = "/mnt/flash/%s" % image
