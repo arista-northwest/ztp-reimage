@@ -7,7 +7,8 @@ import os
 import re
 import subprocess
 import sys
-import time
+import datetime
+import yaml
 
 from subprocess import Popen, PIPE, STDOUT
 
@@ -79,14 +80,39 @@ def get_image(model):
 
     return (None, None) #IMAGES.values()[-1]
 
+def send_report(serial, sysinfo, status="ok", message=""):
+
+    data = {
+        "timestamp": datetime.datetime.utcnow(),
+        "status": status, 
+        "message": message,
+        "sysinfo": sysinfo
+    }
+    
+    proc = Popen([
+        "curl", "-T", "-", "-u", FTP_USER,
+        "ftp://%s/upload/%s" % (FTP_SERVER, serial)
+    ], stdin=PIPE, stdout=PIPE)
+
+    proc.communicate(yaml.safe_dump(data, default_flow_style=False))
+
+    proc.wait()
+    code = proc.returncode
+
+    return True if code == 0 else False
+
 def main():
     sysinfo = get_sysinfo()
     model = sysinfo["model"]
     running = sysinfo["version"]
-    image, version = get_image(model)
+    serial = sysinfo["serial"]
 
-    # if not image:
-        
+    image, version = get_image(model)
+    
+    if not image:
+        send_report(serial, sysinfo, status="failed",
+            message="No EOS version matched for this SKU")
+        sys.exit(1)
 
     if running != version:
         dest = "/mnt/flash/%s" % image
@@ -101,12 +127,7 @@ def main():
         configure(["boot system flash:%s" % image])
         cli(["reload now"])
     else:
-        proc = Popen([
-            "curl", "-T", "-", "-u", FTP_USER,
-            "ftp://%s/upload/%s" % (FTP_SERVER, sysinfo["serial"])
-        ], stdin=PIPE, stdout=PIPE)
-
-        proc.communicate(json.dumps(sysinfo, indent=4, separators=(",", ": ")) + "\n")
+        send_report(serial, sysinfo)
         cli(["write erase now", "delete flash:zerotouch-config"])
 
 if __name__ == "__main__":
