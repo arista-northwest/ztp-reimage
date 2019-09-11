@@ -123,7 +123,10 @@ def main():
             "-u", FTP_USER,
             "-o", dest])
 
-        #if os.path.exists(dest):
+        if not os.path.exists(dest):
+            send_report(serial, sysinfo, status="failed", "failed to copy image")
+            sys.exit(1)
+
         configure(["boot system flash:%s" % image])
         cli(["reload now"])
     else:
