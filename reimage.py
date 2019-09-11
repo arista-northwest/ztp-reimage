@@ -37,6 +37,9 @@ IMAGES = collections.OrderedDict([
     # 7280QRA-C36M    4.22.1FX-CLI    4.21.2.3F
     (r"7280QRA", ("EOS-4.21.2.3F.swi", "4.21.2.3F")),
     
+    # 7280CR2A-60    4.22.1FX-CLI    4.21.2.3F
+    (r"7280CR2A", ("EOS-4.21.2.3F.swi", "4.21.2.3F")),
+    
     # 7504N, 7508N, 7512N or 7516N  4.22.1FX-CLI    4.21.2.3F
     (r"75\d{2}.?", ("EOS-4.21.2.3F.swi", "4.21.2.3F"))
 ])
