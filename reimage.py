@@ -127,7 +127,7 @@ def main():
             "-o", dest])
 
         if not os.path.exists(dest):
-            send_report(serial, sysinfo, status="failed", "failed to copy image")
+            send_report(serial, sysinfo, status="failed", message="failed to copy image")
             sys.exit(1)
 
         configure(["boot system flash:%s" % image])
