@@ -9,13 +9,14 @@ import subprocess
 import sys
 import datetime
 
+import jsonrpclib
 import yaml
 
 from subprocess import Popen, PIPE, STDOUT
 from six import iteritems
 from jsonrpclib import Server
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 FTP_SERVER = "192.168.59.5"
 FTP_USER = "arista:arista"
@@ -49,14 +50,22 @@ IMAGES = collections.OrderedDict([
     (r".*", (None, None, ""))
 ])
 
-def cli(cmds):
+def cli(cmds, format="json"):
     sess = Server("unix:///var/run/command-api.sock")
-    result = sess.runCmds(1, cmds, "json")
+    result = sess.runCmds(1, cmds, format)
 
     return result
 
 def configure(cmds):
     return cli(["configure"] + cmds + ["end"])
+
+def get_startup_config():
+    result = cli(["show startup-config"], "text")[0]
+    if "output" not in result:
+        print("Failed to get startup-config")
+        sys.exit(1)
+    
+    return result["output"]
 
 def get_sysinfo():
     result = cli(["show version", "show boot-config"])
@@ -66,14 +75,15 @@ def get_sysinfo():
     
     # vEOS has no serial use mac address...
     serial = ver["serialNumber"] or re.sub(r"[\:\.]+", "", ver["systemMacAddress"])
-    
+    startup = get_startup_config()
     return {
         "model": ver["modelName"],
         "image": boot["softwareImage"],
         "version": ver["version"],
         "serial": serial,
         "internal": ver["internalVersion"],
-        "revison": ver["hardwareRevision"]
+        "revison": ver["hardwareRevision"],
+        "start_empty": False if len(startup) > 0 else True
     }
 
 def find_image(model):
@@ -133,9 +143,18 @@ def main():
         configure(["boot system flash:%s" % image])
         cli(["reload now"])
     else:
-        cli(["write erase now", "delete flash:zerotouch-config"])
+        cli(["write erase now"])
 
-        report_ok = send_report(serial, sysinfo)
+        try:
+            cli(["delete flash:zerotouch-config"])
+        except jsonrpclib.jsonrpc.ProtocolError:
+            pass
+        finally:
+            if os.path.exists("/mnt/flash/zerotouch-config"):
+                print("Failed to delete zerotouch-config")
+                sys.exit(1)
+
+        report_ok = send_report(serial, get_sysinfo())
 
         if not report_ok:
             sys.exit(1)
