@@ -14,9 +14,8 @@ import yaml
 
 from subprocess import Popen, PIPE, STDOUT
 from six import iteritems
-from jsonrpclib import Server
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 FTP_SERVER = "192.168.59.5"
 FTP_USER = "arista:arista"
@@ -51,7 +50,7 @@ IMAGES = collections.OrderedDict([
 ])
 
 def cli(cmds, format="json"):
-    sess = Server("unix:///var/run/command-api.sock")
+    sess = jsonrpclib.Server("unix:///var/run/command-api.sock")
     result = sess.runCmds(1, cmds, format)
 
     return result
@@ -149,14 +148,22 @@ def main():
             cli(["delete flash:zerotouch-config"])
         except jsonrpclib.jsonrpc.ProtocolError:
             pass
-        finally:
-            if os.path.exists("/mnt/flash/zerotouch-config"):
-                print("Failed to delete zerotouch-config")
-                sys.exit(1)
 
-        report_ok = send_report(serial, get_sysinfo())
+        # refresh sysinfo after erasing startup-config
+        sysinfo = get_sysinfo()
+        
+        if not sysinfo["start_empty"]:
+            print("Startup config is not empty")
+            sys.exit(1)
+
+        if os.path.exists("/mnt/flash/zerotouch-config"):
+            print("Failed to delete zerotouch-config")
+            sys.exit(1)
+
+        report_ok = send_report(serial, sysinfo)
 
         if not report_ok:
+            print("Failed to upload report")
             sys.exit(1)
 
         # turn on locator LED
