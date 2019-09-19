@@ -5,7 +5,7 @@ username admin privilege 15 role network-admin nopassword
 event-handler RUN_SCRIPT
   action bash curl -s http://192.168.59.5/reimage.py | python
   trigger on-boot
-
+!
 interface Management0
   ip address dhcp
 !
