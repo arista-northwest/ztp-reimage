@@ -137,8 +137,12 @@ def main():
         configure(["boot system flash:%s" % image])
         cli(["reload now"])
     else:
-        send_report(serial, sysinfo)
         cli(["write erase now", "delete flash:zerotouch-config"])
+
+        report_ok = send_report(serial, sysinfo)
+
+        if not report_ok:
+            sys.exit(1)
 
         # turn on locator LED
         if locator:
