@@ -8,11 +8,12 @@ import re
 import subprocess
 import sys
 import datetime
+
 import yaml
 
 from subprocess import Popen, PIPE, STDOUT
-
 from six import iteritems
+from jsonrpclib import Server
 
 __version__ = "0.1.1"
 
@@ -49,24 +50,19 @@ IMAGES = collections.OrderedDict([
 ])
 
 def cli(cmds):
-    proc = subprocess.Popen(["/usr/bin/Cli", "-p", "15"],
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    
-    for cmd in cmds:
-        proc.stdin.write('%s\n' % cmd)
-    
-    proc.stdin.close()
-    proc.wait()
+    sess = Server("unix:///var/run/command-api.sock")
+    result = sess.runCmds(1, cmds, "json")
 
-    out = proc.stdout.read()
-    return out
+    return result
 
 def configure(cmds):
     return cli(["configure"] + cmds + ["end"])
 
 def get_sysinfo():
-    ver = json.loads(cli(["show version | json"]))
-    boot = json.loads(cli(["show boot-config | json"]))
+    result = cli(["show version", "show boot-config"])
+
+    ver = result[0]
+    boot = result[1]
     
     # vEOS has no serial use mac address...
     serial = ver["serialNumber"] or re.sub(r"[\:\.]+", "", ver["systemMacAddress"])
