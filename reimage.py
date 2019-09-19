@@ -14,6 +14,8 @@ from subprocess import Popen, PIPE, STDOUT
 
 from six import iteritems
 
+__version__ = "0.1.1"
+
 FTP_SERVER = "192.168.59.5"
 FTP_USER = "arista:arista"
 
