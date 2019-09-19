@@ -20,28 +20,30 @@ FTP_USER = "arista:arista"
 os.environ.update({"TERM": "dumb"})
 
 IMAGES = collections.OrderedDict([
-    # <SKU Regex>: (<Image Filename>, <Expected Version Displayed>)
+    # <SKU Regex>, <Image Filename>, <Expected Version Displayed>, <locator-led>
     # vEOS
-    (r"vEOS", ("vEOS-lab-4.21.2.3F.swi", "4.21.2.3F")),
+    (r"vEOS", ("vEOS-lab-4.21.2.3F.swi", "4.21.2.3F", "")),
     
     # 7050QX-32S    4.21.2.3F
-    (r"7050QX-32S",  ("EOS-4.21.2.3F.swi", "4.21.2.3F")),
+    (r"7050QX-32S",  ("EOS-4.21.2.3F.swi", "4.21.2.3F", "chassis")),
     
     # 7060CX-32S    4.22.1FX-CLI    4.20.3F
     # 7260CX3-64    4.22.1FX-CLI    4.20.3F
-    (r"7\d60CX", ("EOS-4.20.3F.swi", "4.20.3F")),
+    (r"7\d60CX", ("EOS-4.20.3F.swi", "4.20.3F", "chassis")),
     
     # 7170-64C    4.22.1FX-CLI    4.21.6.1.1F
-    (r"7170-64C", ("EOS-4.21.6.1.1F.swi", "4.21.6.1.1F")),
+    (r"7170-64C", ("EOS-4.21.6.1.1F.swi", "4.21.6.1.1F", "chassis")),
 
     # 7280QRA-C36M    4.22.1FX-CLI    4.21.2.3F
-    (r"7280QRA", ("EOS-4.21.2.3F.swi", "4.21.2.3F")),
+    (r"7280QRA", ("EOS-4.21.2.3F.swi", "4.21.2.3F", "chassis")),
     
     # 7280CR2A-60    4.22.1FX-CLI    4.21.2.3F
-    (r"7280CR2A", ("EOS-4.21.2.3F.swi", "4.21.2.3F")),
+    (r"7280CR2A", ("EOS-4.21.2.3F.swi", "4.21.2.3F", "chassis")),
     
     # 7504N, 7508N, 7512N or 7516N  4.22.1FX-CLI    4.21.2.3F
-    (r"75\d{2}.?", ("EOS-4.21.2.3F.swi", "4.21.2.3F"))
+    (r"75\d{2}.?", ("EOS-4.21.2.3F.swi", "4.21.2.3F", "module Supervisor 1")),
+
+    (r".*", (None, None, ""))
 ])
 
 def cli(cmds):
@@ -76,12 +78,12 @@ def get_sysinfo():
         "revison": ver["hardwareRevision"]
     }
 
-def get_image(model):
-    for (pattern, image) in iteritems(IMAGES):
+def find_image(model):
+    for (pattern, details) in iteritems(IMAGES):
         if re.search(pattern, model):
-            return image
+            return details
 
-    return (None, None) #IMAGES.values()[-1]
+    return IMAGES.values()[-1]
 
 def send_report(serial, sysinfo, status="ok", message=""):
 
@@ -110,7 +112,7 @@ def main():
     running = sysinfo["version"]
     serial = sysinfo["serial"]
 
-    image, version = get_image(model)
+    image, version, locator = find_image(model)
     
     if not image:
         send_report(serial, sysinfo, status="failed",
@@ -135,6 +137,10 @@ def main():
     else:
         send_report(serial, sysinfo)
         cli(["write erase now", "delete flash:zerotouch-config"])
+
+        # turn on locator LED
+        if locator:
+            cli(["locator-led %s" % locator])
 
 if __name__ == "__main__":
     main()
