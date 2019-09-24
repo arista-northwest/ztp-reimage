@@ -3,10 +3,12 @@ aaa authentication policy local allow-nopassword-remote-login
 username admin privilege 15 role network-admin nopassword
 !
 no hardware console persistent logging
+logging host 192.168.59.5
 !
 event-handler RUN_SCRIPT
   action bash curl -s http://192.168.59.5/reimage.py | python
   trigger on-boot
+  delay 120
 !
 interface Management0
   ip address dhcp
@@ -16,7 +18,7 @@ interface Management1
 !
 interface Management1/1
   ip address dhcp
-
+!
 management api http-commands
    protocol http
    protocol unix-socket
