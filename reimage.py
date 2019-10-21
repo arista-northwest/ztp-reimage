@@ -75,7 +75,7 @@ Logging.logD(id="SYS_EVENT_REIMAGE_FAILURE",
              explanation="[ An unexpected error ]",
              recommendedAction=Logging.NO_ACTION_REQUIRED)
 
-Logging.logD(id="SYS_EVENT_REIMAGE_LED",
+Logging.logD(id="SYS_EVENT_REIMAGE_LEDERR",
              severity=Logging.logWarning,
              format="failed to enable locator LED",
              explanation="[ The led light has failed to turn on ]",
@@ -105,18 +105,65 @@ def call(cmd, data=None):
 
     return stdout, stderr, err
 
-# def cli(cmds):
-#     proc = subprocess.Popen(["/usr/bin/Cli", "-p", "15"],
-#                             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-#
-#     for cmd in cmds:
-#         proc.stdin.write('%s\n' % cmd)
-#
-#     proc.stdin.close()
-#     proc.wait()
-#
-#     out = proc.stdout.read()
-#     return out
+
+def status_led_reset():
+    return status_led_set("green", 0)
+
+def status_led_set(color, flash=False):
+    """
+    LED Commands
+
+    # 75xx
+    locator-led module 1 # flashing red
+    led set --device Status (-y|-r) # red
+    led set --device Status -g # green
+    led set --device Status (-r|-y) -f 1 # red flashing
+    led set --device Status -g -f 1 # green flashing
+    led set --device Status # off
+    led set --device Beacon -g # blue
+    led set --device Beacon # off
+    led test Basic # resets to default
+
+    # 7050
+    locator-led chassis # solid blue
+    led set --device Status -g # green
+    led set --device Status (-y|-r) # red
+    led set --device Status -b # blue
+    led set --device Status -y -f 1 # red solid, does not flash
+    led set --device Status -g -f 1 # green flash, dim
+    led set --device Status -b -f 1 # blue solid, does not flash
+    led set --device Status # off
+    led test Basic # resets to default
+
+    # 7280
+    locator-led chassis # flashing blue
+    led set --device Status -g # green
+    led set --device Status (-y|-r) # red
+    led set --device Status -b # blue, displays a warning
+    led set --device Status -y -f 1 # red flashing
+    led set --device Status -g -f 1 # green flashing
+    led set --device Status -b -f 1 # blue flashing, displays a warning
+    led set --device Status # off
+    led test Basic # resets to default
+    """
+    if color not in ["green", "red", "blue"]:
+        return "Only colors green and red are supported"
+
+    flash = 1 if flash else 0
+    
+    if color == "blue":
+        # try and use the beacon for chassis
+        _, _, err = call("/usr/bin/env led --device Beacon --%s --flash %d")
+        if not err:
+            _, _, err = call("/usr/bin/env led --device Status")
+            return
+    else:
+        # attempt to turn off beacon
+        _, _, err = call("/usr/bin/env led --device Beacon")
+    
+    _, _, err = call("/usr/bin/env led --device Status --%s --flash %d")
+
+    return err
 
 def configure(cmds):
     return eapi(["configure"] + cmds + ["end"])
@@ -136,16 +183,6 @@ def eapi(cmds, format="json"):
         err = "Error [%d]: %s" % e.message
 
     return result, err
-
-def enable_locator():
-    locators = ["chassis", "module Supervisor1", "module Supervisor2"]
-
-    for l in locators:
-        _, err = eapi("locator-led %s" % l)
-        if not err:
-            return True
-    
-    return False
 
 def find_image(model):
 
@@ -204,7 +241,7 @@ def send_report(serial, sysinfo, status="ok", message=""):
     url = REPORTS_URL % (SERVER, serial)
     
     output, stderr, err = call("curl -s -T - -u %s %s"
-                               % (USER, url, serial), data)
+                               % (USER, url), data)
 
     if err:
         err = "Failed to upload report: %s" % err
@@ -239,6 +276,8 @@ def main():
     image, version = result
 
     if running != version:
+        status_led_set("red", 1)
+        
         Logging.log(SYS_EVENT_REIMAGE_INFO, "loading image '%s'" % image)
         dest = "/mnt/flash/%s" % image
         
@@ -265,6 +304,7 @@ def main():
             return 1
         Logging.log(SYS_EVENT_REIMAGE_INFO, "system reloading in 1 minute")
     else:
+        status_led_set("green", 1)
         Logging.log(SYS_EVENT_REIMAGE_INFO, "New image running, erasing configuration...")
         _, err = eapi(["write erase now"])
         if err:
@@ -294,10 +334,11 @@ def main():
             return 1
 
         # turn on locator LED
-        if enable_locator():
+        err = led_set("blue")
+        if not :
             Logging.log(SYS_EVENT_REIMAGE_INFO, "locator LED enabled")
         else:
-            Logging.log(SYS_EVENT_REIMAGE_LED)
+            Logging.log(SYS_EVENT_REIMAGE_LEDERR)
         
         Logging.log(SYS_EVENT_REIMAGE_INFO, "reimage complete")
     return 0
