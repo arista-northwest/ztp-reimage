@@ -1,0 +1,17 @@
+default-lease-time {{ dhcp.leastime }};
+max-lease-time {{ dhcp.leastime }};
+
+#class "ARISTA" {
+#  match if substring(option vendor-class-identifier, 0, 6) = "Arista";
+#  option bootfile-name "{{ dhcp.bootfile }}";
+#}
+
+subnet {{ dhcp.network }} netmask {{ dhcp.netmask }} {
+  option routers {{ dhcp.routers }};
+  option bootfile-name {{ dhcp.bootfile }};
+  pool {
+        range {{ dhcp.range[0] }} {{ dhcp.range[1] }};
+        # this doesn't work on second reboot...
+        # allow members of "ARISTA";
+  }
+}
