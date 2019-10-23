@@ -107,3 +107,7 @@ ENV/
 .pytest_cache/
 
 .vscode/
+
+startup-config
+reimage.py
+dhcpd.conf
