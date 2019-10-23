@@ -16,7 +16,7 @@ from subprocess import Popen, PIPE, STDOUT, CalledProcessError
 from six import iteritems
 
 import Logging
-
+import Tac
 __version__ = "0.2.0"
 
 # BEGIN - SETTINGS
@@ -29,6 +29,7 @@ IMAGES = collections.OrderedDict([
 {%- endfor %}
 ])
 
+Tac.singleton( "Tac::LogManager" ).syslogFacility = 'logLocal4'
 Logging.logD(id="SYS_EVENT_REIMAGE_INFO",
              severity=Logging.logInfo,
              format="%s",
