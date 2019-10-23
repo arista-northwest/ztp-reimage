@@ -20,9 +20,9 @@ import Logging
 __version__ = "0.2.0"
 
 # BEGIN - SETTINGS
-USER = {{ settings.ftp_user }}
-IMAGES_URL = {{ settings.images_url }}
-REPORTS_URL = {{ settings.reports_url }}
+USER = "{{ settings.ftp_user }}"
+IMAGES_URL = "{{ settings.images_url }}"
+REPORTS_URL = "{{ settings.reports_url }}"
 IMAGES = collections.OrderedDict([
 {%- for image in images %}
     (r"{{ image.pattern }}", ("{{ image.image }}", "{{ image.version }}")),
@@ -47,16 +47,16 @@ Logging.logD(id="SYS_EVENT_REIMAGE_CALLERR",
              explanation="[ an attempt to run shell command has failed ]",
              recommendedAction=Logging.NO_ACTION_REQUIRED)
 
-Logging.logD(id="SYS_EVENT_REIMAGE_FAILURE",
-             severity=Logging.logError,
-             format="%s",
-             explanation="[ An unexpected error ]",
-             recommendedAction=Logging.NO_ACTION_REQUIRED)
-
 Logging.logD(id="SYS_EVENT_REIMAGE_LEDERR",
              severity=Logging.logWarning,
              format="failed to enable locator LED",
              explanation="[ The led light has failed to turn on ]",
+             recommendedAction=Logging.NO_ACTION_REQUIRED)
+
+Logging.logD(id="SYS_EVENT_REIMAGE_FAILURE",
+             severity=Logging.logError,
+             format="%s",
+             explanation="[ An unexpected error ]",
              recommendedAction=Logging.NO_ACTION_REQUIRED)
 # END - SETTINGS
 
@@ -134,7 +134,7 @@ def status_led_set(color, flash=False):
         _, _, err = call("/usr/bin/env led --device Beacon --%s --flash %d")
         if not err:
             _, _, err = call("/usr/bin/env led --device Status")
-            return
+            return err
     else:
         # attempt to turn off beacon
         _, _, err = call("/usr/bin/env led --device Beacon")
@@ -312,12 +312,12 @@ def main():
             return 1
 
         # turn on locator LED
-        err = led_set("blue")
-        if not :
-            Logging.log(SYS_EVENT_REIMAGE_INFO, "locator LED enabled")
-        else:
+        err = status_led_set("blue")
+        if err:
             Logging.log(SYS_EVENT_REIMAGE_LEDERR)
-        
+        else:
+            Logging.log(SYS_EVENT_REIMAGE_INFO, "locator LED enabled")
+            
         Logging.log(SYS_EVENT_REIMAGE_INFO, "reimage complete")
     return 0
 
