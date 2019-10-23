@@ -6,6 +6,14 @@
 - HTTP/FTP/DHCP Server: 192.168.59.5
 - FTP Username/Password: arista/arista
 
+## Generate files
+
+To simplify changing IP addresses and other settings...
+
+```
+python generate.py
+```
+
 ## Installation
 
 ```

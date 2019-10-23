@@ -6,7 +6,7 @@ import yaml
 
 conf = None
 with open("config.yml", "r") as fh:
-    conf = yaml.load(fh.read())
+    conf = yaml.load(fh.read(), Loader=yaml.FullLoader)
 
 def write_file(contents, file):
     with open(file, "w") as fh:
