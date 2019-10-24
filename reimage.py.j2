@@ -132,7 +132,7 @@ def status_led_set(color, flash=False):
     
     if color == "blue":
         # try and use the beacon for chassis
-        _, _, err = call("/usr/bin/env led set --device Beacon --%s --flash %d")
+        _, _, err = call("/usr/bin/env led set --device Beacon -g --flash %d" % flash)
         if not err:
             _, _, err = call("/usr/bin/env led set --device Status")
             return err
@@ -140,7 +140,7 @@ def status_led_set(color, flash=False):
         # attempt to turn off beacon
         _, _, err = call("/usr/bin/env led set --device Beacon")
     
-    _, _, err = call("/usr/bin/env led set --device Status --%s --flash %d")
+    _, _, err = call("/usr/bin/env led set --device Status --%s --flash %d" % (color, flash))
 
     return err
 
