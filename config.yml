@@ -1,41 +1,53 @@
 
 settings:
   ftp_user: arista:arista
-  images_url: ftp://192.168.59.5/
-  reports_url: ftp://192.168.59.5/upload/
-  script_url: http://192.168.59.5/reimage.py
-  startup_config_url: http://192.168.59.5/startup-config
-  syslog_host: 192.168.59.5
+  images_url: ftp://192.168.59.1/
+  reports_url: ftp://192.168.59.1/upload/
+  script_url: http://192.168.59.1/reimage.py
+  startup_config_url: http://192.168.59.1/startup-config
+  syslog_host: 192.168.59.1
 
 dhcp:
   lease_time: 3600
-  bootfile: http://192.168.59.5/startup-config
-  network: 192.168.59.0
-  netmask: 255.255.255.0
-  routers: 192.168.59.1
-  range: [192.168.59.100, 192.168.59.254]
+  bootfile: http://192.168.59.1/startup-config
+  network: 192.168.56.0
+  netmask: 255.255.248.0
+  routers: 192.168.56.1
+  range: [192.168.59.100, 192.168.63.254]
 
 images:
+  # vEOS
   - pattern: vEOS
     image: vEOS-lab-4.21.2.3F.swi
     version: 4.21.2.3F
 
+  # 7050QX-32S    4.21.2.3F
   - pattern: 7050QX-32S
     image: EOS-4.21.2.3F.swi
     version: 4.21.2.3F
 
-  - pattern:  7\d60CX
+  # 7060CX-32S    4.22.1FX-CLI    4.21.2.3F
+  - pattern: 7060CX
+    image: EOS-4.21.2.3F.swi
+    version: 4.21.2.3F
+  
+  # 7260CX3-64    4.22.1FX-CLI    4.20.3F
+  - pattern:  7260CX
     image: EOS-4.20.3F.swi
     version: 4.20.3F
 
+  # 7170-64C    4.22.1FX-CLI    4.21.6.1.1F
   - pattern: 7170-64C
     image: EOS-4.21.6.1.1F.swi
     version: 4.21.6.1.1F
 
+  # 7280QRA-C36M    4.22.1FX-CLI    4.21.2.3F
+  # 7280CR2A-60    4.22.1FX-CLI    4.21.2.3F
   - pattern: 7280
     image: EOS-4.21.2.4F.swi
     version: 4.21.2.4F
 
+  # 7504N, 7508N, 7512N or 7516N  4.22.1FX-CLI    4.21.2.3F
   - pattern: 75\d{2}.?
     image: EOS-4.21.2.4F.swi
     version: 4.21.2.4F
