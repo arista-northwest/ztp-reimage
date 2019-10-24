@@ -132,15 +132,15 @@ def status_led_set(color, flash=False):
     
     if color == "blue":
         # try and use the beacon for chassis
-        _, _, err = call("/usr/bin/env led --device Beacon --%s --flash %d")
+        _, _, err = call("/usr/bin/env led set --device Beacon --%s --flash %d")
         if not err:
-            _, _, err = call("/usr/bin/env led --device Status")
+            _, _, err = call("/usr/bin/env led set --device Status")
             return err
     else:
         # attempt to turn off beacon
-        _, _, err = call("/usr/bin/env led --device Beacon")
+        _, _, err = call("/usr/bin/env led set --device Beacon")
     
-    _, _, err = call("/usr/bin/env led --device Status --%s --flash %d")
+    _, _, err = call("/usr/bin/env led set --device Status --%s --flash %d")
 
     return err
 
@@ -266,7 +266,7 @@ def main():
             % (USER, dest, url))
         
         if err:
-            Logging.log(SYS_EVENT_REIMAGE_CALL, "failed to copy image: %s" % err)
+            Logging.log(SYS_EVENT_REIMAGE_CALLERR, "failed to copy image: %s" % err)
             return 1
 
         _, err = configure(["boot system flash:%s" % image])
