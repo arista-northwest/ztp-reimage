@@ -108,6 +108,7 @@ ENV/
 
 .vscode/
 
+# ignore generated files
 startup-config
 reimage.py
 dhcpd.conf
