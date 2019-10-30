@@ -189,7 +189,7 @@ def get_sysinfo():
     
     # vEOS has no serial use mac address...
     serial = ver["serialNumber"] or re.sub(r"[\:\.]+", "", ver["systemMacAddress"])
-    startup = get_startup_config()
+    startup, _ = get_startup_config()
     result = {
         "model": ver["modelName"],
         "image": boot["softwareImage"],

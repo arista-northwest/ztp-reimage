@@ -1,5 +1,5 @@
-default-lease-time {{ dhcp.leastime }};
-max-lease-time {{ dhcp.leastime }};
+default-lease-time {{ dhcp.lease_time }};
+max-lease-time {{ dhcp.lease_time }};
 
 #class "ARISTA" {
 #  match if substring(option vendor-class-identifier, 0, 6) = "Arista";
